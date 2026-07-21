@@ -1,103 +1,125 @@
 # WebSocket Scoreboard
 
-A real-time scoreboard application built with Express.js and WebSocket technology for live score updates and tracking.
+A Node.js API for managing matches and scoreboard data with Express, Drizzle ORM, PostgreSQL, and Zod validation.
 
-## Overview
+## What It Does
 
-This project provides a server-based scoreboard system that can be used to display and update scores in real-time using WebSocket connections. Perfect for sports events, competitions, gaming tournaments, or any application requiring live score updates.
+The current codebase exposes a small REST API for creating and listing matches. It stores match and commentary data in PostgreSQL through Drizzle, and validates request payloads with Zod.
 
-## Prerequisites
+## Requirements
 
-- Node.js (v14.0.0 or higher)
-- npm (v6.0.0 or higher)
+- Node.js 18 or newer
+- npm
+- PostgreSQL database
 
-## Installation
+## Setup
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd websocket-scoreboard
-```
+1. Install dependencies:
 
-2. Install dependencies:
 ```bash
 npm install
 ```
 
-## Usage
-
-### Development Mode
-
-Run the server in development mode with automatic restart on file changes:
+2. Create a `.env` file in the project root with your database URL:
 
 ```bash
-npm run dev
+DATABASE_URL=postgres://user:password@localhost:5432/websocket_scoreboard
 ```
 
-### Production Mode
+3. Run the database migration:
 
-Start the server in production mode:
+```bash
+npm run db:migrate
+```
+
+4. Start the server:
 
 ```bash
 npm start
 ```
 
-The server will start and listen on port `6060`:
-```
-Server listening on port 6060
+The server listens on port `6060`.
+
+## Scripts
+
+- `npm start` - Start the API server
+- `npm run dev` - Start the API server with Node watch mode
+- `npm run db:generate` - Generate a new Drizzle migration from the schema
+- `npm run db:migrate` - Apply migrations to the database
+- `npm test` - Placeholder test script
+
+## API
+
+### `GET /matches`
+
+Returns a list of matches ordered by `startTime`.
+
+Query parameters:
+
+- `limit` - Optional positive integer, capped at 100
+
+Response:
+
+```json
+{
+   "data": []
+}
 ```
 
-## Available Scripts
+### `POST /matches`
 
-- `npm start` - Start the server in production mode
-- `npm run dev` - Start the server in development mode with file watching enabled
-- `npm test` - Run tests (currently not configured)
+Creates a match.
+
+Body:
+
+```json
+{
+   "sport": "Football",
+   "homeTeam": "Team A",
+   "awayTeam": "Team B",
+   "startTime": "2026-07-21T18:00:00.000Z",
+   "endTime": "2026-07-21T20:00:00.000Z",
+   "homeScore": 0,
+   "awayScore": 0
+}
+```
+
+Validation rules:
+
+- `sport`, `homeTeam`, and `awayTeam` are required
+- `startTime` and `endTime` must be valid ISO date strings
+- `endTime` must be after `startTime`
+- `homeScore` and `awayScore` default to `0` when omitted
+
+## Database Schema
+
+The main tables defined in the schema are:
+
+- `matches` - Match metadata, scores, status, and timestamps
+- `commentary` - Commentary events linked to a match
 
 ## Project Structure
 
-```
+```text
 websocket-scoreboard/
-├── server.js              # Main server entry point
+├── server.js
+├── drizzle.config.js
+├── drizzle/
 ├── src/
-│   └── app.js            # Express application configuration
-├── package.json          # Project dependencies and metadata
-└── README.md             # This file
+│   ├── app.js
+│   ├── db/
+│   │   ├── db.js
+│   │   └── schema.js
+│   ├── routes/
+│   │   └── matches.js
+│   ├── utils/
+│   │   └── match-status.js
+│   └── validation/
+│       └── matches.js
+└── README.md
 ```
 
-## Dependencies
+## Notes
 
-- **express** (^5.2.1) - Fast, unopinionated web framework for Node.js
-
-## Getting Started
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-3. The server will be available at `http://localhost:6060`
-
-## Next Steps
-
-- Add WebSocket support (consider using Socket.IO or the native ws library)
-- Implement scoreboard data models
-- Create API endpoints for score management
-- Add client-side interface for score display and updates
-- Implement real-time score broadcasting to connected clients
-
-## License
-
-ISC
-
-## Author
-
-[Your Name]
-
----
-
-For more information or to contribute, please contact the project maintainer.
+- The application currently exposes REST endpoints only; there is no WebSocket layer implemented yet.
+- Database connection setup lives in `src/db/db.js` and requires `DATABASE_URL` to be set before the app starts.
