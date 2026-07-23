@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch server.js",
-    "start": "node server.js",
+    "dev": "node --watch src/app.js",
+    "start": "node src/app.js",
     "db:generate": "drizzle-kit generate --config drizzle.config.js",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.js",
     "db:crud": "node src/index.js"
@@ -20,6 +20,7 @@
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "pg": "^8.22.0",
+    "ws": "^8.21.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
