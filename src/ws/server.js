@@ -22,11 +22,29 @@ export function attachWebSocketServer (server) {
     });
 
     wss.on('connection', (socket) => {
+        
+        socket.isAlive = true;
+        socket.on('pong', () => {
+            socket.isAlive = true;
+        });
+
         sendJson(socket, { type: 'Welcome' });
 
         socket.on('error', (err) => {
             console.log('WebSocket error:', err);
         });
+    });
+
+    const interval = setInterval(() => {
+        wss.clients.forEach((socket) => {
+            if(socket.isAlive === false) {
+                return socket.terminate();
+            }
+        });
+    }, 30000); // Check alive status every 30 seconds
+
+    wss.on('close', () => {
+        clearInterval(interval);
     });
 
     function broadcastMatchCreated (match) {
